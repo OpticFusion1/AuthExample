@@ -5,8 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import java.util.HashMap;
 import java.util.Map;
 import optic_fusion1.authexample.login.LoginRequest;
-import optic_fusion1.authexample.repository.UserRepository;
-import optic_fusion1.authexample.user.User;
+import optic_fusion1.authexample.account.Account;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestHeader;
+import optic_fusion1.authexample.repository.AccountRepository;
 
 /*
 TODO: Implement the following endpoints. These should most likely be handled via a "SessionController" class
@@ -27,9 +27,9 @@ TODO: Implement the following endpoints. These should most likely be handled via
 public class AuthController {
 
     private static final String SECRET_KEY = "CHANGE_ME";
-    private UserRepository userRepository;
+    private AccountRepository userRepository;
 
-    public AuthController(UserRepository userRepository) {
+    public AuthController(AccountRepository userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -62,9 +62,9 @@ public class AuthController {
         String password = request.getPassword();
 
         if (userRepository.findByUsername(username) != null) {
-            return HttpStatus.BAD_REQUEST;
+            return HttpStatus.FORBIDDEN;
         }
-        userRepository.save(new User(username, password));
+        userRepository.save(new Account(username, password));
         return HttpStatus.OK;
     }
 

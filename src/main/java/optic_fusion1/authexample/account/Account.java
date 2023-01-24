@@ -1,4 +1,4 @@
-package optic_fusion1.authexample.user;
+package optic_fusion1.authexample.account;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -6,22 +6,22 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 
 @Entity
-public class User {
+public class Account {
 
     @Id
     @GeneratedValue
     private Long id;
     @Column
-    private String name;
+    private String username;
     @Column
     private String password;
 
-    public User(String name, String password) {
-        this.name = name;
+    public Account(String username, String password) {
+        this.username = username;
         this.password = password;
     }
 
-    private User() {
+    private Account() {
 
     }
 
@@ -29,8 +29,8 @@ public class User {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
     public String getPassword() {
