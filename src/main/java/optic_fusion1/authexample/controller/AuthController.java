@@ -2,8 +2,9 @@ package optic_fusion1.authexample.controller;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import java.util.HashMap;
+import java.util.Map;
 import optic_fusion1.authexample.login.LoginRequest;
-import optic_fusion1.authexample.login.LoginResponse;
 import optic_fusion1.authexample.repository.UserRepository;
 import optic_fusion1.authexample.user.User;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -33,17 +34,20 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         String username = request.getUsername();
         String password = request.getPassword();
 
         // TODO: Hash password and check that instead of plain-text
         if (userRepository.findByUsername(username) == null || !userRepository.findByUsername(username).getPassword().equals(password)) {
-            return new ResponseEntity<>(new LoginResponse("Invalid username or password"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(HttpStatus.FORBIDDEN);
         }
 
         String jwt = createJWT(username);
-        return new ResponseEntity<>(new LoginResponse(jwt), HttpStatus.OK);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("jwt", jwt);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     // TODO: Improve this w/ an expiration date
@@ -53,29 +57,28 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<LoginResponse> register(@RequestBody LoginRequest request) {
+    public HttpStatus register(@RequestBody LoginRequest request) {
         String username = request.getUsername();
         String password = request.getPassword();
 
         if (userRepository.findByUsername(username) != null) {
-            return new ResponseEntity<>(new LoginResponse("Username already exists"), HttpStatus.BAD_REQUEST);
+            return HttpStatus.BAD_REQUEST;
         }
         userRepository.save(new User(username, password));
-
-        return new ResponseEntity<>(new LoginResponse("User created successfully"), HttpStatus.OK);
+        return HttpStatus.OK;
     }
 
     @PostMapping("/forgotpassword")
-    public ResponseEntity<LoginResponse> forgotPassword(@RequestHeader(value = "Authorization") String auth) {
+    public HttpStatus forgotPassword(@RequestHeader(value = "Authorization") String auth) {
         String jwt = auth.split(" ")[1];
         String username = JWT.require(Algorithm.HMAC256(SECRET_KEY)).build().verify(jwt).getSubject();
 
         if (userRepository.findByUsername(username) == null) {
-            return new ResponseEntity<>(new LoginResponse("Invalid JWT"), HttpStatus.BAD_REQUEST);
+            return HttpStatus.BAD_REQUEST;
         }
 
         // Send password reset email
-        return new ResponseEntity<>(new LoginResponse("Password reset email sent"), HttpStatus.OK);
+        return HttpStatus.OK;
     }
 
 }
