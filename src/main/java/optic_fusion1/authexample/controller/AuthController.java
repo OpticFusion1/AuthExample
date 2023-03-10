@@ -2,6 +2,10 @@ package optic_fusion1.authexample.controller;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -25,10 +29,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AuthController {
 
     private static final String SECRET_KEY = "CHANGE_ME";
-    private AccountRepository userRepository;
+    private AccountRepository accountRepository;
 
-    public AuthController(AccountRepository userRepository) {
-        this.userRepository = userRepository;
+    public AuthController(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
     }
 
     @PostMapping("/login")
@@ -37,7 +41,8 @@ public class AuthController {
         String password = request.getPassword();
 
         // TODO: Hash password and check that instead of plain-text
-        if (userRepository.findByUsername(username) == null || !userRepository.findByUsername(username).getPassword().equals(password)) {
+        Account account = accountRepository.findByUsername(username);
+        if (account == null || !account.getPassword().equals(password)) {
             return new ResponseEntity(HttpStatus.FORBIDDEN);
         }
 
@@ -64,24 +69,30 @@ public class AuthController {
         String username = request.getUsername();
         String password = request.getPassword();
 
-        if (userRepository.findByUsername(username) != null) {
+        if (accountRepository.findByUsername(username) != null) {
             return HttpStatus.FORBIDDEN;
         }
-        userRepository.save(new Account(username, password));
+        accountRepository.save(new Account(username, password));
         return HttpStatus.OK;
     }
 
     @PostMapping("/forgotpassword")
     public HttpStatus forgotPassword(@RequestHeader(value = "Authorization") String auth) {
-        String jwt = auth.split(" ")[1];
-        String username = JWT.require(Algorithm.HMAC256(SECRET_KEY)).build().verify(jwt).getSubject();
-
-        if (userRepository.findByUsername(username) == null) {
+        try {
+            String jwt = auth.split(" ")[1];
+            String username = JWT.require(Algorithm.HMAC256(SECRET_KEY)).build().verify(jwt).getSubject();
+            if (accountRepository.findByUsername(username) == null) {
+                return HttpStatus.BAD_REQUEST;
+            }
+            // Send password reset email
+            return HttpStatus.OK;
+        } catch (TokenExpiredException e) {
+            // Token has expired
+            return HttpStatus.UNAUTHORIZED;
+        } catch (JWTVerificationException e) {
+            // Invalid token
             return HttpStatus.BAD_REQUEST;
         }
-
-        // Send password reset email
-        return HttpStatus.OK;
     }
 
 }
