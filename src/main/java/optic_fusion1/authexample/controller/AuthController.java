@@ -2,15 +2,14 @@ package optic_fusion1.authexample.controller;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import optic_fusion1.authexample.login.LoginRequest;
 import optic_fusion1.authexample.account.Account;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -57,11 +56,12 @@ public class AuthController {
     private String createJWT(String username) {
         Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         Instant expiration = issuedAt.plus(3, ChronoUnit.MINUTES);
-        String jtw = JWT.create().withSubject(username)
+        String jwt = JWT.create().withSubject(username)
+                .withJWTId(UUID.randomUUID().toString()) // Used to ensure that a token has not been replayed or reused.
                 .withIssuedAt(Date.from(issuedAt))
                 .withExpiresAt(Date.from(expiration))
                 .sign(Algorithm.HMAC256(SECRET_KEY));
-        return jtw;
+        return jwt;
     }
 
     @PostMapping("/register")
