@@ -52,7 +52,6 @@ public class AuthController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // TODO: Improve this w/ an expiration date
     private String createJWT(String username) {
         Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         Instant expiration = issuedAt.plus(3, ChronoUnit.MINUTES);
