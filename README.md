@@ -12,7 +12,7 @@ Request Type: POST<br>
 Body: JSON w/ the format {"username":"username","password":"password"}<br>
 Returns OK if account created, otherwise FORBIDDEN<br>
 
-/api/v1/forgetpassword (incomplete)<br>
+/api/v1/forgotpassword (incomplete)<br>
 /api/v1/sessions/renew (unimplemented)<br>
 /api/v1/sessions/active (unimplemented)<br>
 /api/v1/sessions/revoke (unimplemented)<br>
